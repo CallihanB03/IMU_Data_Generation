@@ -71,5 +71,5 @@ def load_data():
 
 
 if __name__ == "__main__":
-    save_path = "./IMU_Data_Generation/participant_imu_data.csv"
+    save_path = "./IMU_Data_Generation/data/participant_imu_data.csv"
     download_data(save_path)

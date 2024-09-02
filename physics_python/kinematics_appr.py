@@ -1,6 +1,37 @@
 #!/usr/bin/env python3
 import torch
 
+"""
+The data is organized in a pandas dataframe with each row corresponding to a time segment.
+
+(*) Approximated a time tensor for the data by:
+1) Calculating sampling_period 
+    sampling_period = 1 / sampling frequency = 1 / 55 Hz = 0.01818...
+
+2) Multiplying sampling_period by sampling window to approximate 
+the length of the sampling window in seconds. 
+Suppose the sampling window = 1485, then
+    sampling_len_in_seconds = sampling_period * sampling_window = 27 seconds
+
+Then, in this example, each time segment is assumed to be approximately 27 seconds.
+
+Each segment has a acceleration mean and acceleration standard deviation for
+each of the x, y, and z directions.
+
+The acceleration tensor for the data is given as a tensor where each element is drawn from a
+Normal distribution with mean=acceleration mean and standard deviation=acceleration standard deviation.
+
+(**) Approximated a velocity tensor for the data by using the definition of velocity.
+v(t) = ∫a(t) + v(0) where v(t) and a(t) are functions of velocity and acceleration
+wrt time respectively.
+
+v(0) is assumed to be 0 m/s (I believe all studies began with 
+participants resting their hands on a table)
+
+"""
+
+
+
 def calculate_time(data, participant):
     """
     sampling rate for IMU data was 55 Hz
