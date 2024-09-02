@@ -65,12 +65,7 @@ def calculate_time(data, participant):
     return time, delta_t
   
 
-
-
-def calculate_velocity(data, participant, direction):
-    _, delta_t = calculate_time(data, participant)
-
-
+def sample_acceleraton(data, participant, direction):
     participant_str = 'p' + str(participant)
     acc_mean_str = f"{direction}_acc_mean"
     acc_std_str = f"{direction}_acc_mean"
@@ -79,11 +74,18 @@ def calculate_velocity(data, participant, direction):
     acc_mean = torch.tensor(participant_data[acc_mean_str])
     acc_std = torch.tensor(participant_data[acc_std_str])
 
+
     # acceleration = epsilon * acc_std + acc_mean where epsilon ~ N(0, I)
     # approximating acceleration values over time
     epsilon_values = torch.randn_like(acc_mean)
     accelerations = epsilon_values * acc_std + acc_mean
+    return accelerations
+    
 
+
+def calculate_velocity(data, participant, direction):
+    _, delta_t = calculate_time(data, participant)
+    accelerations = sample_acceleraton(data, participant, direction)
     initial_velocity = 0 # began study by resting our wrist on the table
     velocity = initial_velocity + torch.cumsum(accelerations, dim=0) * delta_t
     return velocity
