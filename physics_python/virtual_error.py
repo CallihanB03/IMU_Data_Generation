@@ -6,10 +6,7 @@ def virtual_error(velocity_tensor, acceleration_tensor, time_window):
     for ind in range(velocity_tensor[:-1].size(dim=0)):
         pred_velocity = velocity_tensor[ind].item() + acceleration_tensor[ind].item() * time_window
         pred_velocities[ind+1] = pred_velocity
-
-    print(f"velocity_tensor = {velocity_tensor}")
-    print(f"pred_velocities = {pred_velocities}")
-    
+        
     return nn.MSELoss()(velocity_tensor, pred_velocities)
 
     
