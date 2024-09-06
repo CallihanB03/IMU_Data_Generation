@@ -19,7 +19,7 @@ def calculate_vir_err_distributions(save=False, save_path=None):
         delta_t = calculate_time_change(participant)
         for direction in directions:
             loc, scale = __create_virtual_error_distribution(df, participant, direction, delta_t)
-            virtual_error_dists[participant][direction] = tensor((loc, scale))
+            virtual_error_dists[participant][direction] = tuple((loc, scale))
 
     if save and not save_path:
         save_path = "./data/virtual_error_distribution.json"
@@ -48,7 +48,7 @@ def __create_virtual_error_distribution(df, participant, direction, delta_t):
 
 
 if __name__ == "__main__":
-    errs_dict = calculate_vir_err_distributions(save=False)
+    errs_dict = calculate_vir_err_distributions(save=True)
     for first_key in errs_dict:
         print(f"participant = {first_key}")
         for second_key in errs_dict[first_key]:
