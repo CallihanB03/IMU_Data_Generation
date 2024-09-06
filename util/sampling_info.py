@@ -3,13 +3,14 @@ import json
 def download_sampling_info_data():
     participant_type_1 = (3, 8)
     participant_type_2 = (4, 6, 9, 11, 13, 16, 18, 20, 22, 24)
-    participant_type_3 = (i for i in range(4, 25) if (i not in participant_type_1 and i not in participant_type_2))
+    participant_type_3 = tuple(i for i in range(4, 25) if (i not in participant_type_1 and i not in participant_type_2))
 
     window_size_hash = {
         "sampling_rate": 55,
-        "participant_type_1": 1485,
-        "participant_type_2": 1521,
-        "participant_type_3": 1649
+        "participant_type_1": participant_type_1,
+        "participant_type_2": participant_type_2,
+        "participant_type_3": participant_type_3,
+        "windows": {1: 1485, 2: 1521, 3: 1649}
     }
 
     save_path = "./data/sampling_info.json"
