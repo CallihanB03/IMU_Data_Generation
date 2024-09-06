@@ -27,7 +27,7 @@ def calculate_vir_err_distributions(save=False, save_path=None):
     if save:
         with open(save_path, 'w') as file:
             json.dump(virtual_error_dists, file)
-    return None
+    return virtual_error_dists
     
             
           

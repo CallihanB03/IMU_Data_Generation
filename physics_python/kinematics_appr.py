@@ -72,8 +72,8 @@ def sample_acceleration(data, participant, direction):
     acc_std_str = f"{direction}_acc_mean"
 
     participant_data = data[data.participant == participant_str]
-    acc_mean = torch.tensor(participant_data[acc_mean_str])
-    acc_std = torch.tensor(participant_data[acc_std_str])
+    acc_mean = torch.tensor(participant_data[acc_mean_str].to_numpy())
+    acc_std = torch.tensor(participant_data[acc_std_str].to_numpy())
 
 
     # acceleration = epsilon * acc_std + acc_mean where epsilon ~ N(0, I)
@@ -108,6 +108,6 @@ if __name__ == "__main__":
 
     acceleration = sample_acceleration(df, participant, direction)
     print(f"acceleration = {acceleration}")
-    
+
     velocity = calculate_velocity(acceleration, delta_t)
     print(f"velocity = {velocity}")
