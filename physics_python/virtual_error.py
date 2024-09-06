@@ -20,12 +20,11 @@ def virtual_error(velocity_tensor, acceleration_tensor, time_window):
 
 if __name__ == "__main__":
     from physics_python.kinematics_appr import calculate_time, calculate_velocity, sample_acceleraton
-    from util.load_data import load_data
+    from IMU_Data_Generation.util.participant_data import load_data
 
 
     df = load_data()
-    _, delta_t = calculate_time(df, participant=3)
-    velocity = calculate_velocity(df, participant=3, direction='x')
+    velocity, delta_t = calculate_velocity(df, participant=3, direction='x')
     acceleration = sample_acceleraton(df, participant=3, direction='x')
     v_err = virtual_error(velocity, acceleration, delta_t)
     

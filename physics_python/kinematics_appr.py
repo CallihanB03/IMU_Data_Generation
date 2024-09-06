@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import torch
+from util.sampling_info import load_sampling_info_data
 
 """
 The data is organized in a pandas dataframe with each row corresponding to a time segment.
@@ -29,43 +30,43 @@ v(0) is assumed to be 0 m/s (I believe all studies began with
 participants resting their hands on a table)
 
 """
+def calculate_time_change(participant):
+    sampling_info = load_sampling_info_data()
 
 
+    sampling_rate = sampling_info["sampling_rate"]
+    sampling_period = 1 / sampling_rate
 
-def calculate_time(data, participant):
+    participant_types = ["participant_type_1", "participant_type_2", "participant_type_3"]
+
+    participant_type_num = 0
+    for participant_type in participant_types:
+        participant_type_num += 1
+        if participant in sampling_info[participant_type]:
+            window_size = sampling_info["windows"][str(participant_type_num)]
+            break
+
+    delta_t = sampling_period * window_size
+
+    return delta_t
+
+
+def calculate_time(data, participant, delta_t):
+    
     """
     sampling rate for IMU data was 55 Hz
     as is cited on page 6, section 4.1 in
     Detecting In-Person Conversations in Challenging 
     Real-World Environments with Smartwatch Audio and Motion Sensing
     """
-    sampling_rate = 55
-    participant_type_1 = (3, 8)
-    participant_type_2 = (4, 6, 9, 11, 13, 16, 18, 20, 22, 24)
-    participant_type_3 = (i for i in range(4, 25) if (i not in participant_type_1 and i not in participant_type_2))
-
-    window_size_hash = {
-        participant_type_1: 1485,
-        participant_type_2: 1521,
-        participant_type_3: 1649
-    }
-
-    for key in window_size_hash:
-        if participant in key:
-            window_size = window_size_hash[key]
-            break 
-    
-    # Sampling period
-    delta_t = 1 / sampling_rate
-
-    window_time = delta_t * window_size
 
     participant_string = 'p' + str(participant)
-    time = torch.arange(0, window_time * len(data[data.participant == participant_string]), window_time)
-    return time, delta_t
+    total_time = delta_t * len(data[data.participant == participant_string])
+    time = torch.arange(0, total_time, delta_t)
+    return time
   
 
-def sample_acceleraton(data, participant, direction):
+def sample_acceleration(data, participant, direction):
     participant_str = 'p' + str(participant)
     acc_mean_str = f"{direction}_acc_mean"
     acc_std_str = f"{direction}_acc_mean"
@@ -83,27 +84,30 @@ def sample_acceleraton(data, participant, direction):
     
 
 
-def calculate_velocity(data, participant, direction):
-    _, delta_t = calculate_time(data, participant)
-    accelerations = sample_acceleraton(data, participant, direction)
+def calculate_velocity(accelerations, delta_t):
     initial_velocity = 0 # began study by resting our wrist on the table
     velocity = initial_velocity + torch.cumsum(accelerations, dim=0) * delta_t
     return velocity
-
 
     
 
 
 if __name__ == "__main__":
     # python -m physics_python.kinematics_appr
-    from util.load_data import load_data
+    from util.participant_data import load_participant_data
     
-    df = load_data()
+    df = load_participant_data()
     participant = 3
     direction = 'x'
-    time, delta_t = calculate_time(df, participant)
+
+
+    delta_t = calculate_time_change(participant)
+    time = calculate_time(df, participant, delta_t)
     print(f"time = {time}")
     print(f"delta_t = {delta_t}")
 
-    velocity = calculate_velocity(df, participant, direction)
+    acceleration = sample_acceleration(df, participant, direction)
+    print(f"acceleration = {acceleration}")
+    
+    velocity = calculate_velocity(acceleration, delta_t)
     print(f"velocity = {velocity}")
