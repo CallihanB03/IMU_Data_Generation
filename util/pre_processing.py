@@ -10,13 +10,6 @@ def df_to_tensor(df):
             tensor_df[row, col_index] = df[col][row]
     return tensor_df
 
-def tensor_remove(tensor, remove_value):
-    for index, value in enumerate(tensor):
-        if value.item() == remove_value:
-            tensor = torch.cat(tensor[:index], tensor[index+1:])
-        return tensor
-    print(f"{remove_value} was not found in tensor")
-    return tensor
 
 
 def tensor_train_test_split(tensor, test_size):
