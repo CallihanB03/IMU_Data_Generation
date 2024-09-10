@@ -1,6 +1,0 @@
-import torch
-
-class Latent_Distribution(torch.distributions):
-    def __init__(self, z_loc, z_scale):
-        self.z_loc = z_loc
-        self.z_scale = z_scale
