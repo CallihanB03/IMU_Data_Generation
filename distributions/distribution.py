@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from torch.distributions import Distribution
 import random
 
@@ -30,6 +31,29 @@ class Latent_Distribution(Distribution):
         # return latent_sample
     
 
+class Transform_Distribution(nn.Module):
+    def __init__(self, sample_size=100, hidden_size=None):
+        super(Transform_Distribution, self).__init__()
+        self.sample_size = sample_size
+        if not hidden_size:
+            self.hidden_size = self.sample_size
+
+        self.fc1 = nn.Linear(self.sample_size, self.hidden_size)
+        self.fc2 = nn.Linear(self.hidden_size, self.hidden_size)
+        self.fc3 = nn.Linear(self.hidden_size, self.hidden_size)
+        self.fc4 = nn.Linear(self.hidden_size, self.sample_size)
+
+        self.relu = nn.ReLU()
+
+
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.relu(self.fc3(x))
+        x = self.fc4(x)
+        return x
+    
+
 if __name__ == "__main__":
     z_loc = torch.tensor([0, 0])
     z_loc = torch.unsqueeze(z_loc, dim=0)
@@ -37,6 +61,14 @@ if __name__ == "__main__":
     z_scale = torch.tensor([1,1])
     z_scale = torch.unsqueeze(z_scale, dim=0)
 
+    transform_dist = Transform_Distribution(sample_size=z_scale.shape[1])
     
     latent_dist = Latent_Distribution(z_loc=z_loc, z_scale=z_scale)
-    print(latent_dist.sample())
+
+    gaussian_sample = latent_dist.sample()
+
+    print(f"sample for Gaussian distribution: {gaussian_sample}")
+
+    new_dist = transform_dist(gaussian_sample)
+
+    print(f"transformed distribution: {new_dist}")
