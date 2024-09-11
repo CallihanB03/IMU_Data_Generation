@@ -32,9 +32,9 @@ class Latent_Distribution(Distribution):
     
 
 class Transform_Distribution(nn.Module):
-    def __init__(self, sample_size=100, hidden_size=None):
+    def __init__(self, dist_input_size=100, hidden_size=None):
         super(Transform_Distribution, self).__init__()
-        self.sample_size = sample_size
+        self.sample_size = dist_input_size
         if not hidden_size:
             self.hidden_size = self.sample_size
 
