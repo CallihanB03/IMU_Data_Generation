@@ -26,7 +26,7 @@ class Decoder(nn.Module):
 if __name__ == "__main__":
     from util.participant_data import load_participant_data
     from util.pre_processing import df_to_tensor, tensor_train_test_split
-    from models.standard_encoder import Encoder, Sampling_Layer
+    from IMU_Data_Generation.models.encoder import Encoder, Sampling_Layer
     data = load_participant_data()
     data = data[data.columns[:-3]] # Removing string arguments
 
