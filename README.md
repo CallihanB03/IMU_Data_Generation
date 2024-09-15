@@ -1,1 +1,4 @@
-# IMU_Data_Generation
+# Addressing The Lack Of IMU Data For Sensor Based Human Activity Recognition Tasks
+
+### Abstract
+In the era of wearable devices, human activity recognition (HAR) has become an increasingly popular domain of machine learning. A notorious obstacle in training reliable HAR models is the limited availability of inertial motion unit (IMU) data available. Privacy concerns and difficulties associated with conducting formal studies make the collection of IMU data costly and time-consuming. To overcome these challenges, we explore the use of probabilistic programming and physics informed machine learning techniques to investigate the potential use of generative modeling in the training of HAR systems.
