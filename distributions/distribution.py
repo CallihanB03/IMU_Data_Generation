@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.distributions import Distribution
 import random
+from vae_models.encoder import Encoder
 
 class Latent_Distribution(Distribution):
     def __init__(self, z_loc, z_scale):
@@ -13,22 +14,12 @@ class Latent_Distribution(Distribution):
 
         self.epsilon = torch.randn_like(self.z_loc)
 
-    def __draw_sample(self):
-        return self.epsilon * self.z_scale + self.z_loc
-
     """Draws samples from latent distribution; only works for latent dimensionality of 2"""
     def sample(self, shape=None):
         if not shape:
             shape = self.z_loc.shape
 
         return self.epsilon * self.z_scale + self.z_loc
-
-        # latent_sample = torch.zeros(shape)
-        # rows, cols = shape
-        # for row in range(rows):
-        #     for col in range(cols):
-        #         latent_sample[row][col] = self.__draw_sample()
-        # return latent_sample
     
 
 class Transform_Distribution(nn.Module):
