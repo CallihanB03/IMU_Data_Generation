@@ -32,11 +32,12 @@ class Sampling_Layer(nn.Module):
 
 
     def forward(self, inputs):
-        z_mean, z_log_var = inputs
-        batch = z_mean.shape[0]
-        dim = z_log_var.shape[1]
+        z_loc, z_scale = inputs
+        batch = z_loc.shape[0]
+        dim = z_scale.shape[1]
+        z_loc, z_scale = torch.mean(z_loc, dim=0), torch.mean(z_scale, dim=0)
         epsilon = torch.randn(batch, dim)
-        return z_mean + torch.exp(0.5 * z_log_var) * epsilon
+        return z_loc + torch.exp(0.5 * z_loc) * epsilon
 
 if __name__ == "__main__":
     from util.participant_data import load_participant_data
