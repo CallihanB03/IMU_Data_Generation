@@ -11,6 +11,18 @@ def one_hot_to_dummy_encoding(labels):
     return dummy_encodings
 
 
+def dummy_to_one_hot(labels):
+    num_classes = int(max(labels))
+    num_observations = len(labels)
+    one_hot_label = torch.zeros(num_observations, num_classes+1)
+    print(f"Initial one-hot: {one_hot_label}")
+    for observation in range(num_observations):
+        observation_label = int(labels[observation])
+        one_hot_label[observation][observation_label] = 1.
+    return one_hot_label
+        
+
+
 if __name__ == "__main__":
     from util.participant_data import load_participant_data
     from util.pre_processing import df_to_tensor
