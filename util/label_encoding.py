@@ -15,7 +15,6 @@ def dummy_to_one_hot(labels):
     num_classes = int(max(labels))
     num_observations = len(labels)
     one_hot_label = torch.zeros(num_observations, num_classes+1)
-    print(f"Initial one-hot: {one_hot_label}")
     for observation in range(num_observations):
         observation_label = int(labels[observation])
         one_hot_label[observation][observation_label] = 1.
