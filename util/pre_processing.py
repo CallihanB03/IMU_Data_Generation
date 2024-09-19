@@ -2,10 +2,13 @@ import torch
 import random
 
 def df_to_tensor(df):
-    cols = len(df.columns)
+    if len(df.shape) == 1:
+        cols = 1
+    else:
+        cols = len(df.columns)
     rows = len(df)
     tensor_df = torch.zeros(rows, cols)
-    for col_index, col in enumerate(df.columns):
+    for col_index, col in enumerate(cols):
         for row in range(rows):
             tensor_df[row, col_index] = df[col][row]
     return tensor_df
