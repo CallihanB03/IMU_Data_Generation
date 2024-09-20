@@ -13,6 +13,10 @@ class Classifier(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_classes = num_classes
 
+        self.optimal_params = self.state_dict()
+        self.lowest_test_loss = None
+
+
         self.fc1 = nn.Linear(self.input_dim, self.hidden_dim)
         self.fc2 = nn.Linear(self.hidden_dim, self.hidden_dim)
         self.fc3 = nn.Linear(self.hidden_dim, self.hidden_dim)
@@ -32,6 +36,7 @@ class Classifier(nn.Module):
         x = self.softmax(self.fc4(x))
 
         return x
+    
     
     def epoch_train(self, train_data, train_labels, test_data, test_labels, epochs, loss, optimizer, test_freq=5):
         self.train_losses = np.zeros(epochs)
@@ -53,6 +58,12 @@ class Classifier(nn.Module):
 
             if not epoch % test_freq:
                 epoch_test_loss = self.evaluate(test_data, test_labels, loss=loss)
+
+                # saving optimal model params
+                if self.lowest_test_loss and epoch_test_loss < self.lowest_test_loss:
+                    self.lowest_test_loss = epoch_test_loss
+                    self.optimal_params = self.state_dict()
+
                 self.test_losses[test_loss_ind] = epoch_test_loss
                 display_test_loss = "{:.4}".format(epoch_test_loss)
                 print(f"Test Loss: {display_test_loss}")
@@ -80,6 +91,12 @@ class Classifier(nn.Module):
 
             if not epoch % test_freq:
                 epoch_test_loss = self.evaluate(test_data, test_labels, loss=loss)
+
+                # saving optimal model params
+                if self.lowest_test_loss and epoch_test_loss < self.lowest_test_loss:
+                    self.lowest_test_loss = epoch_test_loss
+                    self.optimal_params = self.state_dict()
+
                 self.test_losses.append(epoch_test_loss)
                 display_test_loss = "{:.4}".format(epoch_test_loss)
                 print(f"Test Loss: {display_test_loss}")
@@ -98,7 +115,7 @@ class Classifier(nn.Module):
         return test_loss
     
     def save_model(self, path="./saved_models/saved_model.pth"):
-        torch.save(self.state_dict(), path)
+        torch.save(self.optimal_params, path)
         print(f"model saved to {path}")
         return None
 
@@ -159,15 +176,12 @@ if __name__ == "__main__":
     opt = torch.optim.Adam(params=classifier.parameters(), lr=1e-3)
     loss = nn.CrossEntropyLoss()
 
-    classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=10, loss=loss, optimizer=opt)
+    classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=100, loss=loss, optimizer=opt)
     #classifier.epsilon_train(x_train, y_train, x_test, y_test, loss=loss, optimizer=opt)
 
     print(f"train losses = {classifier.train_losses}")
     print(f"test losses = {classifier.test_losses}")
 
-    conf_matr = classifier.confusion_matrix(x_test, y_test, normalize=False)
-    print(f"confusion matrix = {conf_matr}")
-    print()
     normalized_conf_matr = classifier.confusion_matrix(x_test, y_test)
     print(f"normalized confusion matrix = {normalized_conf_matr}")
 
