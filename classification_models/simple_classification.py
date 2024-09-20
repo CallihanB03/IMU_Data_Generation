@@ -3,7 +3,8 @@ import torch.nn as nn
 import numpy as np 
 from util.participant_data import load_participant_data
 from util.pre_processing import df_to_tensor, tensor_train_test_split
-from util.label_encoding import dummy_to_one_hot
+from util.label_encoding import dummy_to_one_hot, one_hot_to_dummy_encoding
+
 
 class Classifier(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_classes, *args, **kwargs):
@@ -40,7 +41,7 @@ class Classifier(nn.Module):
         for epoch in range(epochs):
             pred_labels = self(train_data)
 
-            epoch_loss = 5 * loss(pred_labels, train_labels)
+            epoch_loss = 8 * loss(pred_labels, train_labels)
             self.train_losses[epoch] = epoch_loss
             epoch_loss.backward()
             optimizer.step()
@@ -67,7 +68,7 @@ class Classifier(nn.Module):
         while True:
             pred_labels = self(train_data)
 
-            epoch_loss = 5 * loss(pred_labels, train_labels)
+            epoch_loss = 8 * loss(pred_labels, train_labels)
             self.train_losses.append(epoch_loss)
             epoch_loss.backward()
             optimizer.step()
@@ -95,6 +96,45 @@ class Classifier(nn.Module):
         pred_y = self(data)
         test_loss = loss(pred_y, label)
         return test_loss
+    
+    def save_model(self, path="./saved_models/saved_model.pth"):
+        torch.save(self.state_dict(), path)
+        print(f"model saved to {path}")
+        return None
+
+    
+    def confusion_matrix(self, data, label, normalize=True):
+        """
+        cols iterate through y_pred
+        rows iterate through y_true
+        """
+        y_pred = self(data)
+        num_classes = label.shape[1]
+
+        y_true, y_pred = one_hot_to_dummy_encoding(label), one_hot_to_dummy_encoding(y_pred)
+
+
+        assert y_pred.shape == y_true.shape, f"shape of predicted labels {y_pred.shape} is incompatible with shape of true labels {y_true.shape}" 
+
+        conf_matr = torch.zeros(num_classes, num_classes)
+        for i in range(num_classes):
+            for j in range(num_classes):
+                count = 0
+
+                for k, _ in enumerate(y_pred):
+                    if y_pred[k] == i and y_true[k] == j:
+                        count += 1
+                
+                conf_matr[i][j] = count
+
+        if normalize:
+            total = y_pred.shape[0]
+            for i in range(num_classes):
+                for j in range(num_classes):
+                    conf_matr[i][j] = round((conf_matr[i][j] / total).item(), 2)
+
+        return conf_matr
+
 
 
 if __name__ == "__main__":
@@ -110,8 +150,6 @@ if __name__ == "__main__":
     input_dim = x_train.shape[1]
     num_classes = 3
 
-    loss = nn.MSELoss()
-
 
 
     classifier = Classifier(input_dim=input_dim, 
@@ -119,11 +157,17 @@ if __name__ == "__main__":
                             num_classes=num_classes)
 
     opt = torch.optim.Adam(params=classifier.parameters(), lr=1e-3)
-    loss = nn.MSELoss()
+    loss = nn.CrossEntropyLoss()
 
     classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=10, loss=loss, optimizer=opt)
     #classifier.epsilon_train(x_train, y_train, x_test, y_test, loss=loss, optimizer=opt)
 
     print(f"train losses = {classifier.train_losses}")
     print(f"test losses = {classifier.test_losses}")
+
+    conf_matr = classifier.confusion_matrix(x_test, y_test, normalize=False)
+    print(f"confusion matrix = {conf_matr}")
+    print()
+    normalized_conf_matr = classifier.confusion_matrix(x_test, y_test)
+    print(f"normalized confusion matrix = {normalized_conf_matr}")
 
