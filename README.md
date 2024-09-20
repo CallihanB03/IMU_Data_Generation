@@ -12,7 +12,7 @@ A Variational Autoencoder (VAE) is a generative model that combines principles f
 
 
 The VAE consists of two networks: the Encoder, $E$, and the decoder, $D$. The encoder learns a map from the input space, $\mathbf{X}$, to the latent space, $q_{\psi}(\mathbf{z}|\mathbf{x})$, while the decoder learns a map from the latent space to the the output space, $\mathbf{\hat{X}}$.
-
+![image](./README_images/VAE%20Diagram.png)
 $$
 E: \mathbf{X} \longrightarrow q_{\psi}(\mathbf{z}|\mathbf{x})
 $$
