@@ -2,6 +2,7 @@ import os
 import torch
 import torch.nn as nn 
 import numpy as np 
+from statistics import mean
 from util.participant_data import load_participant_data
 from util.pre_processing import df_to_tensor, tensor_train_test_split
 from util.label_encoding import dummy_to_one_hot, one_hot_to_dummy_encoding
@@ -206,9 +207,17 @@ if __name__ == "__main__":
     opt = torch.optim.Adam(params=classifier.parameters(), lr=1e-3)
     loss = nn.CrossEntropyLoss()
 
-    classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=1, loss=loss, optimizer=opt)
-    classifier.show_metrics(x_test, y_test)
-    classifier.save_model(save_title="trial_model")
+
+    epochs = 10000
+
+    classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=epochs, loss=loss, optimizer=opt)
+    metrics = classifier.evaluate_metrics(x_test, y_test)
+    f1_scores = [metrics[i][2].item() for i in range(num_classes)]
+
+    avg_f1 = round(mean(f1_scores), 3)
+    print(f"average f1 score = {avg_f1}")
+
+    classifier.save_model(save_title=f"epochs_{epochs}_average_f1_{avg_f1}")
     
 
     
