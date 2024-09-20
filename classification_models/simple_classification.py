@@ -1,9 +1,11 @@
+import os
 import torch
 import torch.nn as nn 
 import numpy as np 
 from util.participant_data import load_participant_data
 from util.pre_processing import df_to_tensor, tensor_train_test_split
 from util.label_encoding import dummy_to_one_hot, one_hot_to_dummy_encoding
+from util.model_metrics import precision, recall, f1
 
 
 class Classifier(nn.Module):
@@ -39,15 +41,15 @@ class Classifier(nn.Module):
     
     
     def epoch_train(self, train_data, train_labels, test_data, test_labels, epochs, loss, optimizer, test_freq=5):
-        self.train_losses = np.zeros(epochs)
-        self.test_losses = np.zeros(epochs // test_freq)
+        self.train_losses = []
+        self.test_losses = []
         test_loss_ind = 0
 
         for epoch in range(epochs):
             pred_labels = self(train_data)
 
             epoch_loss = 8 * loss(pred_labels, train_labels)
-            self.train_losses[epoch] = epoch_loss
+            self.train_losses.append(epoch_loss)
             epoch_loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -64,7 +66,7 @@ class Classifier(nn.Module):
                     self.lowest_test_loss = epoch_test_loss
                     self.optimal_params = self.state_dict()
 
-                self.test_losses[test_loss_ind] = epoch_test_loss
+                self.test_losses.append(epoch_test_loss)
                 display_test_loss = "{:.4}".format(epoch_test_loss)
                 print(f"Test Loss: {display_test_loss}")
                 test_loss_ind += 1
@@ -114,10 +116,38 @@ class Classifier(nn.Module):
         test_loss = loss(pred_y, label)
         return test_loss
     
-    def save_model(self, path="./saved_models/saved_model.pth"):
-        torch.save(self.optimal_params, path)
-        print(f"model saved to {path}")
+    def save_model(self, save_title="saved_model"):
+        path = "./saved_models/"
+        save_path = path + save_title + ".pth"
+
+        if not os.path.exists("./saved_models"):
+            os.makedirs("./saved_models")
+
+        torch.save(self.optimal_params, save_path)
+        print(f"model saved to {save_path}")
         return None
+    
+    def evaluate_metrics(self, input_data, labels):
+        num_metrics = 3
+        num_classes = labels.shape[1]
+        metrics = torch.zeros(num_classes, num_metrics)
+
+        for label in range(num_classes):
+            prec = precision(self, input_data, labels, precison_wrt=label)
+            rec = recall(self, input_data, labels, recall_wrt=label)
+            f_1 = f1(self, input_data, labels, f1_wrt=label)
+
+            metrics[label][0] = prec
+            metrics[label][1] = rec
+            metrics[label][2] = f_1
+
+        return metrics
+    
+    def show_metrics(self, input_data, labels):
+        metrics = self.evaluate_metrics(input_data, labels)
+        print(metrics) 
+        return None
+        
 
     
     def confusion_matrix(self, data, label, normalize=True):
@@ -176,12 +206,10 @@ if __name__ == "__main__":
     opt = torch.optim.Adam(params=classifier.parameters(), lr=1e-3)
     loss = nn.CrossEntropyLoss()
 
-    classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=100, loss=loss, optimizer=opt)
-    #classifier.epsilon_train(x_train, y_train, x_test, y_test, loss=loss, optimizer=opt)
+    classifier.epoch_train(x_train, y_train, x_test, y_test, epochs=1, loss=loss, optimizer=opt)
+    classifier.show_metrics(x_test, y_test)
+    classifier.save_model(save_title="trial_model")
+    
 
-    print(f"train losses = {classifier.train_losses}")
-    print(f"test losses = {classifier.test_losses}")
-
-    normalized_conf_matr = classifier.confusion_matrix(x_test, y_test)
-    print(f"normalized confusion matrix = {normalized_conf_matr}")
+    
 
