@@ -70,6 +70,9 @@ def f1(model, input_data, labels, f1_wrt):
     prec = precision(model, input_data, labels, precison_wrt=f1_wrt)
     rec = recall(model, input_data, labels, recall_wrt=f1_wrt)
 
+    if prec == 0 and rec == 0:
+        return 0
+
     return round(2 * ((prec * rec) / (prec + rec)), 2)
 
 if __name__ == "__main__":
