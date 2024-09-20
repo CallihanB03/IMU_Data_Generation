@@ -25,7 +25,7 @@ class Classifier(nn.Module):
         self.fc3 = nn.Linear(self.hidden_dim, self.hidden_dim)
         self.fc4 = nn.Linear(self.hidden_dim, self.num_classes)
 
-        self.softmax = nn.Softmax(dim=0)
+        self.softmax = nn.Softmax(dim=1)
         self.relu = nn.ReLU()
 
         self.train_losses = []
@@ -49,18 +49,18 @@ class Classifier(nn.Module):
         for epoch in range(epochs):
             pred_labels = self(train_data)
 
-            epoch_loss = 8 * loss(pred_labels, train_labels)
+            epoch_loss = 10 * loss(pred_labels, train_labels)
             self.train_losses.append(epoch_loss)
             epoch_loss.backward()
             optimizer.step()
             optimizer.zero_grad()
 
-            display_loss = "{:.4}".format(epoch_loss)
+            display_loss = "{:.6}".format(epoch_loss)
 
             print(f"Epoch: {epoch+1}, Loss: {display_loss}")
 
             if not epoch % test_freq:
-                epoch_test_loss = self.evaluate(test_data, test_labels, loss=loss)
+                epoch_test_loss = 10 * self.evaluate(test_data, test_labels, loss=loss)
 
                 # saving optimal model params
                 if self.lowest_test_loss and epoch_test_loss < self.lowest_test_loss:
@@ -93,7 +93,7 @@ class Classifier(nn.Module):
             print(f"Epoch: {epoch+1}, Loss: {display_loss}")
 
             if not epoch % test_freq:
-                epoch_test_loss = self.evaluate(test_data, test_labels, loss=loss)
+                epoch_test_loss = 10 * self.evaluate(test_data, test_labels, loss=loss)
 
                 # saving optimal model params
                 if self.lowest_test_loss and epoch_test_loss < self.lowest_test_loss:
